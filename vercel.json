@@ -11,5 +11,12 @@
   },
   "rewrites": [
     { "source": "/api/v1/:path*", "destination": "/api/v1" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron_reset",
+      "schedule": "0 20 1 * *"
+    }
   ]
 }
+

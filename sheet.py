@@ -56,3 +56,14 @@ def update(row: int, column: int, value: str) -> None:
 def add(name: str) -> None:
     """Добавить новое заведение с пустыми остальными колонками."""
     _worksheet().append_row([name, "", "", ""], value_input_option="USER_ENTERED")
+
+
+def clear_data() -> int:
+    """Обнулить статус, ароматы и формат. Названия заведений не трогает. Возвращает число строк."""
+    ws = _worksheet()
+    rows = ws.get_all_values()
+    n = max(0, len(rows) - 1)
+    if n == 0:
+        return 0
+    ws.batch_clear([f"B2:D{n + 1}"])
+    return n
