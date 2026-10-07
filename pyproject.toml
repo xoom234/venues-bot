@@ -8,3 +8,6 @@ dependencies = [
   "python-dotenv==1.2.4",
   "starlette==0.52.1",
 ]
+
+[tool.vercel]
+entrypoint = "api_app:app"

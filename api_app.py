@@ -1,24 +1,36 @@
-"""HTTP API для Telegram Mini App (заведения)."""
+"""HTTP API: Mini App, Telegram webhook, monthly reset."""
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 
-from aiogram import Bot
+from aiogram import Bot, Dispatcher
+from aiogram.types import Update
 from aiogram.utils.web_app import WebAppUser
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, PlainTextResponse, Response
 from starlette.routing import Route
 
 import sheet
+from bot import create_bot, create_dispatcher
 from webapp_auth import AuthError, authenticate
 
 log = logging.getLogger(__name__)
 
 SHEET_DOWN = "Сервис временно недоступен"
 MAX_TEXT = 500
+
+_dp: Dispatcher | None = None
+
+
+def _dispatcher() -> Dispatcher:
+    global _dp
+    if _dp is None:
+        _dp = create_dispatcher()
+    return _dp
 
 
 def allowed_users() -> set[int]:
@@ -62,6 +74,42 @@ def _venue_json(row: dict) -> dict:
 
 async def health(request: Request) -> JSONResponse:
     return JSONResponse({"ok": True})
+
+
+async def webhook_get(request: Request) -> PlainTextResponse:
+    return PlainTextResponse("ok")
+
+
+async def webhook_post(request: Request) -> Response:
+    secret = os.environ.get("WEBHOOK_SECRET", "")
+    got = request.headers.get("x-telegram-bot-api-secret-token", "")
+    if not secret or got != secret:
+        return Response(status_code=401)
+    body = await request.body()
+    bot = create_bot()
+    try:
+        update = Update.model_validate(json.loads(body), context={"bot": bot})
+        await _dispatcher().feed_update(bot, update)
+    except Exception:
+        log.exception("webhook failed")
+        return Response(status_code=500)
+    finally:
+        await bot.session.close()
+    return Response(status_code=200)
+
+
+async def cron_reset(request: Request) -> Response:
+    secret = os.environ.get("CRON_SECRET", "")
+    auth = request.headers.get("authorization", "")
+    if not secret or auth != f"Bearer {secret}":
+        return Response(status_code=401)
+    try:
+        cleared = sheet.clear_data()
+    except Exception:
+        log.exception("monthly reset failed")
+        return Response(status_code=500)
+    log.info("monthly reset: cleared %s rows", cleared)
+    return JSONResponse({"ok": True, "cleared": cleared})
 
 
 async def list_venues(request: Request) -> JSONResponse:
@@ -215,6 +263,9 @@ routes = [
     Route("/api/v1/venues", list_venues, methods=["GET"]),
     Route("/api/v1/venues", create_venue, methods=["POST"]),
     Route("/api/v1/venues/{row:int}", update_venue, methods=["PATCH"]),
+    Route("/api/webhook", webhook_get, methods=["GET"]),
+    Route("/api/webhook", webhook_post, methods=["POST"]),
+    Route("/api/cron_reset", cron_reset, methods=["GET", "POST"]),
 ]
 
 app = Starlette(
