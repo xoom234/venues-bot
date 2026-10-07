@@ -26,6 +26,11 @@ def allowed_users() -> set[int]:
     return {int(x.strip()) for x in raw.split(",") if x.strip()}
 
 
+def allowed_usernames() -> set[str]:
+    raw = os.environ.get("ALLOWED_USERNAMES", "")
+    return {x.strip().lstrip("@").casefold() for x in raw.split(",") if x.strip()}
+
+
 def norm(s: str) -> str:
     return " ".join(s.split()).casefold()
 
@@ -39,6 +44,7 @@ def _user(request: Request) -> WebAppUser:
         request.headers.get("authorization"),
         bot_token=os.environ["BOT_TOKEN"],
         allowed_user_ids=allowed_users(),
+        allowed_usernames=allowed_usernames(),
     )
     request.scope["tg_user"] = user
     return user

@@ -21,6 +21,7 @@ def authenticate(
     *,
     bot_token: str,
     allowed_user_ids: set[int],
+    allowed_usernames: set[str] | None = None,
     now: datetime | None = None,
 ) -> WebAppUser:
     scheme, _, init_data = (authorization or "").partition(" ")
@@ -40,6 +41,12 @@ def authenticate(
     if now - auth_date > MAX_INIT_DATA_AGE:
         raise AuthError(401, "Сессия устарела, откройте приложение заново")
 
-    if allowed_user_ids and data.user.id not in allowed_user_ids:
+    names = allowed_usernames or set()
+    if allowed_user_ids or names:
+        uname = (data.user.username or "").casefold()
+        if data.user.id in allowed_user_ids:
+            return data.user
+        if uname and uname in names:
+            return data.user
         raise AuthError(403, f"Нет доступа. Напишите владельцу ваш id: {data.user.id}")
     return data.user
