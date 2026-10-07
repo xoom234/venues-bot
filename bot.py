@@ -32,6 +32,11 @@ def allowed_users() -> set[int]:
     return {int(x.strip()) for x in raw.split(",") if x.strip()}
 
 
+def allowed_usernames() -> set[str]:
+    raw = os.environ.get("ALLOWED_USERNAMES", "")
+    return {x.strip().lstrip("@").casefold() for x in raw.split(",") if x.strip()}
+
+
 def norm(s: str) -> str:
     return " ".join(s.split()).casefold()
 
@@ -42,8 +47,11 @@ def show(value: str, empty: str = "не указано") -> str:
 
 class AccessFilter(BaseFilter):
     async def __call__(self, message: Message) -> bool:
-        uid = message.from_user.id if message.from_user else None
-        if uid in allowed_users():
+        user = message.from_user
+        if user and user.id in allowed_users():
+            return True
+        uname = (user.username or "").casefold() if user else ""
+        if uname and uname in allowed_usernames():
             return True
         await message.answer("Нет доступа")
         return False
