@@ -8,3 +8,6 @@ __pycache__/
 Заведения.xlsx
 .vercel/
 .vercel
+webapp/node_modules/
+webapp/dist/
+webapp/.env.local

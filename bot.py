@@ -5,13 +5,26 @@ import os
 
 from aiogram import Bot, Dispatcher
 from aiogram.filters import BaseFilter, Command, CommandObject
-from aiogram.types import Message
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, WebAppInfo
 
 import sheet
 
 log = logging.getLogger(__name__)
 
 SHEET_DOWN = "Сервис временно недоступен"
+DEFAULT_WEBAPP_URL = "https://venues-bot.vercel.app/"
+
+
+def webapp_url() -> str:
+    return os.environ.get("WEBAPP_URL", "").strip() or DEFAULT_WEBAPP_URL
+
+
+def open_app_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Открыть заведения", web_app=WebAppInfo(url=webapp_url()))]
+        ]
+    )
 
 
 def allowed_users() -> set[int]:
@@ -103,6 +116,13 @@ def create_dispatcher() -> Dispatcher:
     access = AccessFilter()
 
     @dp.message(Command("start"), access)
+    async def cmd_start(message: Message) -> None:
+        await message.answer(
+            "Заведения: список, статус, ароматы и формат.\n\n"
+            "Нажмите «Открыть заведения» или используйте команды из /help.",
+            reply_markup=open_app_keyboard(),
+        )
+
     @dp.message(Command("help"), access)
     async def cmd_help(message: Message) -> None:
         await message.answer(
@@ -114,7 +134,8 @@ def create_dispatcher() -> Dispatcher:
             "/set <заведение> <прошел|не прошел>\n"
             "/aroma <заведение> <текст>\n"
             "/format <заведение> <текст>\n"
-            "/add <название>"
+            "/add <название>\n\n"
+            "Или откройте приложение: /start"
         )
 
     @dp.message(Command("list"), access)

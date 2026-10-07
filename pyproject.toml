@@ -6,6 +6,7 @@ dependencies = [
   "aiogram==3.31.0",
   "gspread==6.2.1",
   "python-dotenv==1.2.4",
+  "starlette==0.52.1",
 ]
 
 [tool.vercel]

@@ -1,9 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd webapp && npm ci",
+  "buildCommand": "cd webapp && npm run build",
+  "outputDirectory": "webapp/dist",
   "functions": {
-    "api/webhook.py": {
+    "api/*.py": {
       "maxDuration": 30,
-      "excludeFiles": "{.venv/**,__pycache__/**,**/*.pyc,.git/**,poll.py}"
+      "excludeFiles": "{.venv/**,__pycache__/**,**/*.pyc,.git/**,webapp/**,poll.py}"
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/api/v1/:path*", "destination": "/api/v1" }
+  ]
 }
