@@ -190,6 +190,8 @@ def create_dispatcher() -> Dispatcher:
             log.exception("set: таблица недоступна")
             await message.answer(SHEET_DOWN)
             return
+        uid = message.from_user.id if message.from_user else "?"
+        log.info("uid=%s set %s: %r → %r", uid, found["name"], old, status)
         await message.answer(
             f"{found['name']}: статус «{show(old)}» → «{status}»"
         )
@@ -219,6 +221,8 @@ def create_dispatcher() -> Dispatcher:
             log.exception("aroma: таблица недоступна")
             await message.answer(SHEET_DOWN)
             return
+        uid = message.from_user.id if message.from_user else "?"
+        log.info("uid=%s aroma %s: %r → %r", uid, venue["name"], old, new)
         await message.answer(
             f"{venue['name']}: ароматы «{show(old)}» → «{new}»"
         )
@@ -249,6 +253,8 @@ def create_dispatcher() -> Dispatcher:
             log.exception("format: таблица недоступна")
             await message.answer(SHEET_DOWN)
             return
+        uid = message.from_user.id if message.from_user else "?"
+        log.info("uid=%s format %s: %r → %r", uid, venue["name"], old, text)
         await message.answer(
             f"{venue['name']}: формат «{show(old)}» → «{text}»"
         )
@@ -269,6 +275,8 @@ def create_dispatcher() -> Dispatcher:
             log.exception("add: таблица недоступна")
             await message.answer(SHEET_DOWN)
             return
+        uid = message.from_user.id if message.from_user else "?"
+        log.info("uid=%s add %r", uid, name)
         await message.answer(f"Добавлено: {name}")
 
     return dp
