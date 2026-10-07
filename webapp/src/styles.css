@@ -35,6 +35,7 @@
   --destructive: var(--tg-theme-destructive-text-color, var(--fb-destructive));
   --ok: #34c759;
   --radius: 12px;
+  --tabbar-height: 56px;
   --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px));
   --safe-top: var(--tg-content-safe-area-inset-top, 0px);
 
@@ -80,6 +81,10 @@ button:disabled {
 .screen {
   min-height: var(--tg-viewport-stable-height, 100vh);
   padding: calc(8px + var(--safe-top)) 0 calc(24px + var(--safe-bottom));
+}
+
+.screen.with-tabbar {
+  padding-bottom: calc(var(--tabbar-height) + var(--safe-bottom) + 24px);
 }
 
 .page {
@@ -322,4 +327,120 @@ button:disabled {
   border-radius: var(--radius);
   background: var(--card-bg);
   font-weight: 600;
+}
+
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--tabbar-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  display: flex;
+  background: var(--page-bg);
+  border-top: 1px solid var(--separator);
+  z-index: 10;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--hint);
+  font-size: 0.75rem;
+}
+
+.tab.active {
+  color: var(--button);
+  font-weight: 600;
+}
+
+.tab svg {
+  width: 22px;
+  height: 22px;
+}
+
+.stats-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stats-pill {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stats-pill.ok .stats-num {
+  color: var(--ok);
+}
+
+.stats-pill.bad .stats-num {
+  color: var(--destructive);
+}
+
+.stats-num {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.stats-cap {
+  color: var(--hint);
+  font-size: 0.85rem;
+}
+
+.venue-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.venue-stat-card {
+  width: 100%;
+  text-align: left;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.venue-stat-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.status-badge {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--hint);
+}
+
+.status-badge.passed {
+  color: var(--ok);
+}
+
+.status-badge.failed {
+  color: var(--destructive);
+}
+
+.venue-stat-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--hint);
+  font-size: 0.9rem;
+  word-break: break-word;
 }
