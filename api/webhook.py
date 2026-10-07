@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from aiogram import Bot, Dispatcher
+from aiogram import Dispatcher
 from aiogram.types import Update
 
 from bot import create_bot, create_dispatcher
@@ -22,22 +22,25 @@ from bot import create_bot, create_dispatcher
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-_bot: Bot | None = None
 _dp: Dispatcher | None = None
 
 
-def _app() -> tuple[Bot, Dispatcher]:
-    global _bot, _dp
-    if _bot is None or _dp is None:
-        _bot = create_bot()
+def _dispatcher() -> Dispatcher:
+    global _dp
+    if _dp is None:
         _dp = create_dispatcher()
-    return _bot, _dp
+    return _dp
 
 
 async def _handle(body: bytes) -> None:
-    bot, dp = _app()
-    update = Update.model_validate(json.loads(body), context={"bot": bot})
-    await dp.feed_update(bot, update)
+    # Новый Bot на каждый запрос: asyncio.run() закрывает loop,
+    # а кэшированная aiohttp-сессия ломается (Event loop is closed).
+    bot = create_bot()
+    try:
+        update = Update.model_validate(json.loads(body), context={"bot": bot})
+        await _dispatcher().feed_update(bot, update)
+    finally:
+        await bot.session.close()
 
 
 class handler(BaseHTTPRequestHandler):
